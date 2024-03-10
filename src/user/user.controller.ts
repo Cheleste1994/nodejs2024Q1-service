@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { validate as uuidValidate } from 'uuid';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { IsValidUuid } from 'src/decorators/isValidUuid.decorators';
 
 @Controller('user')
 export class UserController {
@@ -46,11 +46,7 @@ export class UserController {
   @Get(':id')
   @HttpCode(200)
   @Header('Accept', 'application/json')
-  async getById(@Param('id') id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Not uuid');
-    }
-
+  async getById(@Param('id') @IsValidUuid() id: string) {
     const result = await this.userService.getById(id);
 
     if (!result) {
@@ -67,13 +63,9 @@ export class UserController {
   @HttpCode(200)
   @Header('Accept', 'application/json')
   async update(
-    @Param('id') id: string,
+    @Param('id') @IsValidUuid() id: string,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Not uuid');
-    }
-
     const { password, ...result } = await this.userService.updatePassword(
       id,
       updatePasswordDto,
@@ -85,11 +77,7 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(204)
-  async remove(@Param('id') id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Not uuid');
-    }
-
+  async remove(@Param('id') @IsValidUuid() id: string) {
     return this.userService.remove(id);
   }
 }

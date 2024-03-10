@@ -15,6 +15,7 @@ import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { validate as uuidValidate } from 'uuid';
+import { IsValidUuid } from 'src/decorators/isValidUuid.decorators';
 
 @Controller('track')
 export class TrackController {
@@ -45,11 +46,11 @@ export class TrackController {
   @Get(':id')
   @HttpCode(200)
   @Header('Accept', 'application/json')
-  async getById(@Param('id') id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Not uuid');
-    }
-
+  async getById(
+    @Param('id')
+    @IsValidUuid()
+    id: string,
+  ) {
     const result = await this.trackService.getById(id);
 
     if (!result) {
@@ -62,11 +63,10 @@ export class TrackController {
   @Put(':id')
   @HttpCode(200)
   @Header('Accept', 'application/json')
-  update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Not uuid');
-    }
-
+  update(
+    @Param('id') @IsValidUuid() id: string,
+    @Body() updateTrackDto: UpdateTrackDto,
+  ) {
     if (updateTrackDto.albumId && !uuidValidate(updateTrackDto.albumId)) {
       throw new BadRequestException('Not uuid');
     }
@@ -80,11 +80,7 @@ export class TrackController {
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id') id: string) {
-    if (!uuidValidate(id)) {
-      throw new BadRequestException('Not uuid');
-    }
-
+  remove(@Param('id') @IsValidUuid() id: string) {
     return this.trackService.remove(id);
   }
 }
