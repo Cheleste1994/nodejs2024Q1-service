@@ -57,7 +57,7 @@ export class TrackController {
       throw new NotFoundException('User not found');
     }
 
-    return this.trackService.getById(id);
+    return result;
   }
 
   @Put(':id')

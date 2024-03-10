@@ -2,10 +2,14 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { User } from './user/entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Track } from './track/entities/track.entity';
+import { Artist } from './artist/entities/artist.entity';
+import { Album } from './album/entities/album.entity';
 
 interface DB {
   users: User[];
   tracks: Track[];
+  artists: Artist[];
+  albums: Album[];
 }
 
 @Injectable()
@@ -31,6 +35,21 @@ export class DbService implements OnModuleInit {
           artistId: null,
           duration: 199,
           name: 'Track',
+        },
+      ],
+      artists: [
+        {
+          id: uuidv4(),
+          grammy: true,
+          name: 'Artist',
+        },
+      ],
+      albums: [
+        {
+          id: uuidv4(),
+          artistId: '',
+          year: 20,
+          name: 'Artist',
         },
       ],
     };

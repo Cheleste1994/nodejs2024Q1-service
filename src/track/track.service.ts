@@ -41,7 +41,7 @@ export class TrackService {
     const result = await this.getById(id);
 
     if (!result) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Track not found');
     }
 
     result.albumId = albumId || result.albumId;
@@ -56,7 +56,7 @@ export class TrackService {
     const index = this.state.db.tracks.findIndex((track) => track.id === id);
 
     if (index === -1) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Track not found');
     }
 
     this.state.db.tracks.splice(index, 1);

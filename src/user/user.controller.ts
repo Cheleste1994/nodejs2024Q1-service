@@ -6,7 +6,6 @@ import {
   Param,
   Delete,
   HttpCode,
-  BadRequestException,
   NotFoundException,
   Put,
   Header,
