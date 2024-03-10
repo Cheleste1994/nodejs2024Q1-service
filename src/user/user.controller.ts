@@ -35,14 +35,12 @@ export class UserController {
   @Get()
   @HttpCode(200)
   async getAll() {
-    return (await this.userService.getAll()).filter(
-      ({ password, ...result }) => {
-        if (!password) {
-          console.log('password not found', password);
-        }
-        return result;
-      },
-    );
+    return (await this.userService.getAll()).map(({ password, ...result }) => {
+      if (!password) {
+        console.log('password not found', password);
+      }
+      return result;
+    });
   }
 
   @Get(':id')
