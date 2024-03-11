@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { AlbumService } from 'src/album/album.service';
 import { Album } from 'src/album/entities/album.entity';
 import { ArtistService } from 'src/artist/artist.service';
 import { Artist } from 'src/artist/entities/artist.entity';
-import { DbService } from 'src/db.service';
+import { DbService } from 'src/db/db.service';
 import { Track } from 'src/track/entities/track.entity';
 import { TrackService } from 'src/track/track.service';
-import { Favorites } from './entities/fav.entity';
+import { FavoritesResponse } from './entities/fav.entity';
 
 @Injectable()
 export class FavsService {
@@ -17,8 +21,24 @@ export class FavsService {
     private artistService: ArtistService,
   ) {}
 
-  async getAll(): Promise<Favorites> {
-    return this.state.db.favorites;
+  async getAll(): Promise<FavoritesResponse> {
+    const {
+      albums: albumsId,
+      artists: artistsId,
+      tracks: tracksId,
+    } = this.state.db.favorites;
+
+    const albums = await Promise.all(
+      albumsId.map(async (key) => await this.albumService.getById(key)),
+    );
+    const artists = await Promise.all(
+      artistsId.map(async (key) => await this.artistService.getById(key)),
+    );
+    const tracks = await Promise.all(
+      tracksId.map(async (key) => await this.trackService.getById(key)),
+    );
+
+    return { albums, artists, tracks };
   }
 
   async addTrack(id: string): Promise<Track> {
@@ -27,15 +47,15 @@ export class FavsService {
     if (!result) {
       throw new UnprocessableEntityException('Track not found');
     }
-    const index = this.state.db.favorites.tracks.push(result);
+    if (!this.state.db.favorites.tracks.includes(id)) {
+      this.state.db.favorites.tracks.push(id);
+    }
 
-    return this.state.db.favorites.tracks[index - 1];
+    return result;
   }
 
   removeTrack(id: string) {
-    const index = this.state.db.favorites.tracks.findIndex(
-      (track) => track.id === id,
-    );
+    const index = this.state.db.favorites.tracks.indexOf(id);
 
     if (index === -1) {
       throw new NotFoundException('Track not found');
@@ -52,21 +72,22 @@ export class FavsService {
     if (!result) {
       throw new UnprocessableEntityException('Album not found');
     }
-    const index = this.state.db.favorites.albums.push(result);
 
-    return this.state.db.favorites.albums[index - 1];
+    if (!this.state.db.favorites.albums.includes(id)) {
+      this.state.db.favorites.albums.push(id);
+    }
+
+    return result;
   }
 
   removeAlbum(id: string) {
-    const index = this.state.db.favorites.albums.findIndex(
-      (album) => album.id === id,
-    );
+    const index = this.state.db.favorites.albums.indexOf(id);
 
     if (index === -1) {
       throw new NotFoundException('Album not found');
     }
 
-    this.state.db.favorites.tracks.splice(index, 1);
+    this.state.db.favorites.albums.splice(index, 1);
 
     return { status: 'ok' };
   }
@@ -77,21 +98,21 @@ export class FavsService {
     if (!result) {
       throw new UnprocessableEntityException('Artist not found');
     }
-    const index = this.state.db.favorites.artists.push(result);
+    if (!this.state.db.favorites.artists.includes(id)) {
+      this.state.db.favorites.artists.push(id);
+    }
 
-    return this.state.db.favorites.artists[index - 1];
+    return result;
   }
 
   removeArtist(id: string) {
-    const index = this.state.db.favorites.artists.findIndex(
-      (Artist) => Artist.id === id,
-    );
+    const index = this.state.db.favorites.artists.indexOf(id);
 
     if (index === -1) {
       throw new NotFoundException('Artist not found');
     }
 
-    this.state.db.favorites.tracks.splice(index, 1);
+    this.state.db.favorites.artists.splice(index, 1);
 
     return { status: 'ok' };
   }

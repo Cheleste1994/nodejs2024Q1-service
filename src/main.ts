@@ -8,11 +8,12 @@ import * as YAML from 'yaml';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.useGlobalPipes(new ValidationPipe());
 
   const document = YAML.parse(fs.readFileSync('doc/api.yaml', 'utf8'));
 
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('/doc', app, document);
 
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 4000;

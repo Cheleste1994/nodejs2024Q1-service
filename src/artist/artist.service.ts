@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db.service';
+import { DbService } from 'src/db/db.service';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { CreateArtistDto } from './dto/create-artist.dto';
@@ -10,44 +10,61 @@ export class ArtistService {
   constructor(private state: DbService) {}
 
   async create({ grammy, name }: CreateArtistDto): Promise<Artist> {
-    const index = this.state.db.artists.push({
-      name,
-      id: uuidv4(),
-      grammy,
-    });
+    const id = uuidv4();
 
-    return this.state.db.artists[index - 1];
+    this.state.db.artists[id] = {
+      name,
+      id,
+      grammy,
+    };
+
+    return this.state.db.artists[id];
   }
 
   async getAll(): Promise<Artist[]> {
-    return this.state.db.artists;
+    return Object.values(this.state.db.artists);
   }
 
   async getById(id: string): Promise<Artist> {
-    return this.state.db.artists.find((artist) => artist.id === id);
+    return this.state.db.artists[id] || null;
   }
 
   async update(id: string, { grammy, name }: UpdateArtistDto): Promise<Artist> {
-    const result = await this.getById(id);
+    const artist = this.state.db.artists[id];
 
-    if (!result) {
+    if (!artist) {
       throw new NotFoundException('Artist not found');
     }
 
-    result.grammy = typeof grammy === 'boolean' ? grammy : result.grammy;
-    result.name = name || result.name;
+    artist.grammy = typeof grammy === 'boolean' ? grammy : artist.grammy;
+    artist.name = name || artist.name;
 
-    return result;
+    return artist;
   }
 
-  remove(id: string) {
-    const index = this.state.db.artists.findIndex((track) => track.id === id);
-
-    if (index === -1) {
+  async remove(id: string) {
+    if (!this.state.db.artists[id]) {
       throw new NotFoundException('Artist not found');
     }
 
-    this.state.db.artists.splice(index, 1);
+    Object.values(this.state.db.tracks).forEach((track) => {
+      if (track.artistId === id) {
+        track.artistId = null;
+      }
+    });
+
+    Object.values(this.state.db.albums).forEach((album) => {
+      if (album.artistId === id) {
+        album.artistId = null;
+      }
+    });
+
+    const indexArtist = this.state.db.favorites.artists.indexOf(id);
+    if (indexArtist !== -1) {
+      this.state.db.favorites.artists.splice(indexArtist, 1);
+    }
+
+    delete this.state.db.artists[id];
 
     return { status: 'ok' };
   }

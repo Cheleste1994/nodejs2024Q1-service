@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DbService } from 'src/db.service';
+import { DbService } from 'src/db/db.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,55 +14,55 @@ export class UserService {
   constructor(private state: DbService) {}
 
   async create({ login, password }: CreateUserDto): Promise<User> {
-    const index = this.state.db.users.push({
+    const id = uuidv4();
+
+    this.state.db.users[id] = {
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      id: uuidv4(),
+      id,
       login,
       password,
       version: 1,
-    });
+    };
 
-    return this.state.db.users[index - 1];
+    return this.state.db.users[id];
   }
 
   async getAll(): Promise<User[] | null> {
-    return this.state.db.users;
+    return Object.values(this.state.db.users);
   }
 
   async getById(id: string): Promise<User | null> {
-    return this.state.db.users.find((user) => user.id === id);
+    return this.state.db.users[id] || null;
   }
 
   async updatePassword(
     id: string,
     { newPassword, oldPassword }: UpdatePasswordDto,
   ): Promise<User> {
-    const result = await this.getById(id);
+    const user = this.state.db.users[id];
 
-    if (!result) {
+    if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    if (result.password !== oldPassword) {
+    if (user.password !== oldPassword) {
       throw new ForbiddenException('Invalid old password');
     }
 
-    result.password = newPassword;
-    result.updatedAt = Date.now();
-    result.version += 1;
+    user.password = newPassword;
+    user.updatedAt = Date.now();
+    user.version += 1;
 
-    return result;
+    return user;
   }
 
   async remove(id: string) {
-    const index = this.state.db.users.findIndex((user) => user.id === id);
-
-    if (index === -1) {
+    if (!this.state.db.users[id]) {
       throw new NotFoundException('User not found');
     }
 
-    this.state.db.users.splice(index, 1);
+    delete this.state.db.users[id];
 
     return { status: 'ok' };
   }

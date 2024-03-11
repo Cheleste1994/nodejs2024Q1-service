@@ -3,9 +3,9 @@ import { Artist } from 'src/artist/entities/artist.entity';
 import { Track } from 'src/track/entities/track.entity';
 
 export class Favorites {
-  artists: Artist[];
-  albums: Album[];
-  tracks: Track[];
+  artists: string[];
+  albums: string[];
+  tracks: string[];
 }
 
 export class FavoritesResponse {

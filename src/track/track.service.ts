@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db.service';
+import { DbService } from 'src/db/db.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
@@ -15,51 +15,56 @@ export class TrackService {
     duration,
     name,
   }: CreateTrackDto): Promise<Track> {
-    const index = this.state.db.tracks.push({
+    const id = uuidv4();
+
+    this.state.db.tracks[id] = {
       name,
-      id: uuidv4(),
+      id,
       duration,
       albumId: albumId || null,
       artistId: artistId || null,
-    });
+    };
 
-    return this.state.db.tracks[index - 1];
+    return this.state.db.tracks[id];
   }
 
   async getAll(): Promise<Track[]> {
-    return this.state.db.tracks;
+    return Object.values(this.state.db.tracks);
   }
 
   async getById(id: string): Promise<Track> {
-    return this.state.db.tracks.find((track) => track.id === id);
+    return this.state.db.tracks[id] || null;
   }
 
   async update(
     id: string,
     { albumId, artistId, duration, name }: UpdateTrackDto,
   ): Promise<Track> {
-    const result = await this.getById(id);
+    const track = this.state.db.tracks[id];
 
-    if (!result) {
+    if (!track) {
       throw new NotFoundException('Track not found');
     }
 
-    result.albumId = albumId || result.albumId;
-    result.artistId = artistId || result.artistId;
-    result.duration = duration || result.duration;
-    result.name = name || result.name;
+    track.albumId = albumId || track.albumId;
+    track.artistId = artistId || track.artistId;
+    track.duration = duration || track.duration;
+    track.name = name || track.name;
 
-    return result;
+    return track;
   }
 
-  remove(id: string) {
-    const index = this.state.db.tracks.findIndex((track) => track.id === id);
-
-    if (index === -1) {
+  async remove(id: string) {
+    if (!this.state.db.tracks[id]) {
       throw new NotFoundException('Track not found');
     }
 
-    this.state.db.tracks.splice(index, 1);
+    const indexTrack = this.state.db.favorites.tracks.indexOf(id);
+    if (indexTrack !== -1) {
+      this.state.db.favorites.tracks.splice(indexTrack, 1);
+    }
+
+    delete this.state.db.tracks[id];
 
     return { status: 'ok' };
   }
