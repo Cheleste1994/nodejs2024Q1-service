@@ -34,7 +34,7 @@ export class ArtistService {
       throw new NotFoundException('Artist not found');
     }
 
-    result.grammy = grammy || !result.grammy;
+    result.grammy = typeof grammy === 'boolean' ? grammy : result.grammy;
     result.name = name || result.name;
 
     return result;

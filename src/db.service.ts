@@ -4,12 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { Track } from './track/entities/track.entity';
 import { Artist } from './artist/entities/artist.entity';
 import { Album } from './album/entities/album.entity';
+import { Favorites } from './favs/entities/fav.entity';
 
 interface DB {
   users: User[];
   tracks: Track[];
   artists: Artist[];
   albums: Album[];
+  favorites: Favorites;
 }
 
 @Injectable()
@@ -52,6 +54,11 @@ export class DbService implements OnModuleInit {
           name: 'Artist',
         },
       ],
+      favorites: {
+        albums: [],
+        artists: [],
+        tracks: [],
+      },
     };
   }
 

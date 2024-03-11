@@ -6,5 +6,6 @@ import { DbService } from 'src/db.service';
 @Module({
   controllers: [AlbumController],
   providers: [AlbumService, DbService],
+  exports: [AlbumService],
 })
 export class AlbumModule {}

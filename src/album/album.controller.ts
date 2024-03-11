@@ -52,7 +52,7 @@ export class AlbumController {
     const result = await this.albumService.getById(id);
 
     if (!result) {
-      throw new NotFoundException('Artist not found');
+      throw new NotFoundException('Album not found');
     }
 
     return result;

@@ -56,7 +56,7 @@ export class TrackController {
     const result = await this.trackService.getById(id);
 
     if (!result) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Track not found');
     }
 
     return result;
