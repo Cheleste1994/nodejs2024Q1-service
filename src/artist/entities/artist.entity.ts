@@ -6,4 +6,5 @@ export class Artist implements ArtistPrisma {
   updatedAt: Date;
   name: string;
   grammy: boolean;
+
 }

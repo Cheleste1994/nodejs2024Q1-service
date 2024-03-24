@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { Artist } from './entities/artist.entity';
@@ -9,7 +9,7 @@ export class ArtistService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateArtistDto): Promise<Artist> {
-    return this.prisma.artist.create({
+     return this.prisma.artist.create({
       data,
     });
   }

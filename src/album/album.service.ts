@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
@@ -8,9 +12,13 @@ import { PrismaService } from 'src/prisma.service';
 export class AlbumService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateAlbumDto): Promise<Album> {
+  async create({ name, year, artistId }: CreateAlbumDto): Promise<Album> {
     return this.prisma.album.create({
-      data,
+      data: {
+        name,
+        year,
+        artistId,
+      },
     });
   }
 

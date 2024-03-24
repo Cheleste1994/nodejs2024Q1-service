@@ -23,7 +23,8 @@ export class CreateAlbumDto {
     required: false,
     type: 'string',
   })
+
   @IsString()
   @IsOptional()
-  artistId: string | null;
+  artistId: string;
 }

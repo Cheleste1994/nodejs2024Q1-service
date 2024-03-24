@@ -13,10 +13,22 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async create({ login, password }: CreateUserDto): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        login,
+      },
+    });
+
+    if (user) {
+      throw new ForbiddenException('Login register');
+    }
+
     return this.prisma.user.create({
       data: {
         login,
         password,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
         version: 1,
       },
     });
@@ -34,7 +46,7 @@ export class UserService {
     id: string,
     { newPassword, oldPassword }: UpdatePasswordDto,
   ): Promise<User> {
-    const user = await this.getById(id)
+    const user = await this.getById(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -50,12 +62,14 @@ export class UserService {
       },
       data: {
         password: newPassword,
+        updatedAt: Date.now(),
+        version: user.version + 1,
       },
     });
   }
 
   async remove(id: string) {
-    const user = await this.getById(id)
+    const user = await this.getById(id);
 
     if (!user) {
       throw new NotFoundException('User not found');

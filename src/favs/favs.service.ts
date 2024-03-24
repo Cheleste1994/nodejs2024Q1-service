@@ -8,37 +8,49 @@ import { Album } from 'src/album/entities/album.entity';
 import { ArtistService } from 'src/artist/artist.service';
 import { Artist } from 'src/artist/entities/artist.entity';
 import { DbService } from 'src/db/db.service';
+import { PrismaService } from 'src/prisma.service';
 import { Track } from 'src/track/entities/track.entity';
 import { TrackService } from 'src/track/track.service';
 import { FavoritesResponse } from './entities/fav.entity';
 
 @Injectable()
 export class FavsService {
+  favsId: string;
+
   constructor(
     private state: DbService,
     private trackService: TrackService,
     private albumService: AlbumService,
     private artistService: ArtistService,
-  ) {}
+    private prisma: PrismaService,
+  ) {
+    this.addInitialState();
+  }
+
+  async addInitialState() {
+    const { id } = await this.prisma.favorites.create({
+      data: {
+        albums: [],
+        artists: [],
+        tracks: [],
+      },
+    });
+
+    this.favsId = id;
+  }
 
   async getAll(): Promise<FavoritesResponse> {
-    const {
-      albums: albumsId,
-      artists: artistsId,
-      tracks: tracksId,
-    } = this.state.db.favorites;
-
-    const albums = await Promise.all(
-      albumsId.map(async (key) => await this.albumService.getById(key)),
-    );
-    const artists = await Promise.all(
-      artistsId.map(async (key) => await this.artistService.getById(key)),
-    );
-    const tracks = await Promise.all(
-      tracksId.map(async (key) => await this.trackService.getById(key)),
-    );
+    const {artists, tracks, albums} = await this.getFavorites()
 
     return { albums, artists, tracks };
+  }
+
+  async getFavorites() {
+    return this.prisma.favorites.findUnique({
+      where: {
+        id: this.favsId,
+      },
+    });
   }
 
   async addTrack(id: string): Promise<Track> {
@@ -47,21 +59,40 @@ export class FavsService {
     if (!result) {
       throw new UnprocessableEntityException('Track not found');
     }
-    if (!this.state.db.favorites.tracks.includes(id)) {
-      this.state.db.favorites.tracks.push(id);
-    }
+    const { tracks } = await this.getFavorites();
 
+    if (!tracks.includes(id)) {
+      await this.prisma.favorites.update({
+        where: {
+          id: this.favsId,
+        },
+        data: {
+          tracks: {
+            push: id,
+          },
+        },
+      });
+    }
     return result;
   }
 
-  removeTrack(id: string) {
-    const index = this.state.db.favorites.tracks.indexOf(id);
+  async removeTrack(id: string) {
+    const {tracks} = await this.getFavorites();
 
-    if (index === -1) {
+    if (!tracks.includes(id)) {
       throw new NotFoundException('Track not found');
     }
 
-    this.state.db.favorites.tracks.splice(index, 1);
+    await this.prisma.favorites.update({
+      where: {
+        id: this.favsId
+      },
+      data: {
+        tracks: {
+          set: tracks.filter((track) => track !== id)
+        }
+      }
+    })
 
     return { status: 'ok' };
   }
@@ -73,21 +104,40 @@ export class FavsService {
       throw new UnprocessableEntityException('Album not found');
     }
 
-    if (!this.state.db.favorites.albums.includes(id)) {
-      this.state.db.favorites.albums.push(id);
-    }
+    const { albums } = await this.getFavorites();
 
+    if (!albums.includes(id)) {
+      await this.prisma.favorites.update({
+        where: {
+          id: this.favsId,
+        },
+        data: {
+          albums: {
+            push: id,
+          },
+        },
+      });
+    }
     return result;
   }
 
-  removeAlbum(id: string) {
-    const index = this.state.db.favorites.albums.indexOf(id);
+  async removeAlbum(id: string) {
+    const {albums} = await this.getFavorites();
 
-    if (index === -1) {
+    if (!albums.includes(id)) {
       throw new NotFoundException('Album not found');
     }
 
-    this.state.db.favorites.albums.splice(index, 1);
+    await this.prisma.favorites.update({
+      where: {
+        id: this.favsId
+      },
+      data: {
+        albums: {
+          set: albums.filter((track) => track !== id)
+        }
+      }
+    })
 
     return { status: 'ok' };
   }
@@ -98,21 +148,41 @@ export class FavsService {
     if (!result) {
       throw new UnprocessableEntityException('Artist not found');
     }
-    if (!this.state.db.favorites.artists.includes(id)) {
-      this.state.db.favorites.artists.push(id);
-    }
+    const { artists } = await this.getFavorites();
 
+    if (!artists.includes(id)) {
+      await this.prisma.favorites.update({
+        where: {
+          id: this.favsId,
+        },
+        data: {
+          artists: {
+            push: id,
+          },
+        },
+      });
+    }
     return result;
   }
 
-  removeArtist(id: string) {
-    const index = this.state.db.favorites.artists.indexOf(id);
+  async removeArtist(id: string) {
+    const {artists} = await this.getFavorites();
 
-    if (index === -1) {
+    if (!artists.includes(id)) {
       throw new NotFoundException('Artist not found');
     }
 
-    this.state.db.favorites.artists.splice(index, 1);
+    await this.prisma.favorites.update({
+      where: {
+        id: this.favsId
+      },
+      data: {
+        artists: {
+          set: artists.filter((track) => track !== id)
+        }
+      }
+    })
+
 
     return { status: 'ok' };
   }
