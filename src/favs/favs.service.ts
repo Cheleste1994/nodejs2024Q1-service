@@ -40,7 +40,35 @@ export class FavsService {
   }
 
   async getAll(): Promise<FavoritesResponse> {
-    const {artists, tracks, albums} = await this.getFavorites()
+    const {
+      artists: artistsIds,
+      tracks: tracksIds,
+      albums: albumsIds,
+    } = await this.getFavorites();
+
+    const artists = await this.prisma.artist.findMany({
+      where: {
+        id: {
+          in: artistsIds,
+        },
+      },
+    });
+
+    const tracks = await this.prisma.track.findMany({
+      where: {
+        id: {
+          in: tracksIds,
+        },
+      },
+    });
+
+    const albums = await this.prisma.album.findMany({
+      where: {
+        id: {
+          in: albumsIds,
+        },
+      },
+    });
 
     return { albums, artists, tracks };
   }
@@ -77,7 +105,7 @@ export class FavsService {
   }
 
   async removeTrack(id: string) {
-    const {tracks} = await this.getFavorites();
+    const { tracks } = await this.getFavorites();
 
     if (!tracks.includes(id)) {
       throw new NotFoundException('Track not found');
@@ -85,14 +113,14 @@ export class FavsService {
 
     await this.prisma.favorites.update({
       where: {
-        id: this.favsId
+        id: this.favsId,
       },
       data: {
         tracks: {
-          set: tracks.filter((track) => track !== id)
-        }
-      }
-    })
+          set: tracks.filter((track) => track !== id),
+        },
+      },
+    });
 
     return { status: 'ok' };
   }
@@ -122,7 +150,7 @@ export class FavsService {
   }
 
   async removeAlbum(id: string) {
-    const {albums} = await this.getFavorites();
+    const { albums } = await this.getFavorites();
 
     if (!albums.includes(id)) {
       throw new NotFoundException('Album not found');
@@ -130,14 +158,14 @@ export class FavsService {
 
     await this.prisma.favorites.update({
       where: {
-        id: this.favsId
+        id: this.favsId,
       },
       data: {
         albums: {
-          set: albums.filter((track) => track !== id)
-        }
-      }
-    })
+          set: albums.filter((track) => track !== id),
+        },
+      },
+    });
 
     return { status: 'ok' };
   }
@@ -166,7 +194,7 @@ export class FavsService {
   }
 
   async removeArtist(id: string) {
-    const {artists} = await this.getFavorites();
+    const { artists } = await this.getFavorites();
 
     if (!artists.includes(id)) {
       throw new NotFoundException('Artist not found');
@@ -174,15 +202,14 @@ export class FavsService {
 
     await this.prisma.favorites.update({
       where: {
-        id: this.favsId
+        id: this.favsId,
       },
       data: {
         artists: {
-          set: artists.filter((track) => track !== id)
-        }
-      }
-    })
-
+          set: artists.filter((track) => track !== id),
+        },
+      },
+    });
 
     return { status: 'ok' };
   }

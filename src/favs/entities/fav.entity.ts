@@ -9,7 +9,7 @@ export class Favorites {
 }
 
 export class FavoritesResponse {
-  artists: string[];
-  albums: string[];
-  tracks: string[];
+  artists: Artist[];
+  albums: Album[];
+  tracks: Track[];
 }
