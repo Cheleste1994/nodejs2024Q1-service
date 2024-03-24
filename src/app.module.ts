@@ -9,6 +9,7 @@ import { AlbumModule } from './album/album.module';
 import { FavsModule } from './favs/favs.module';
 import { DbService } from './db/db.service';
 import { DbModule } from './db/db.module';
+import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { DbModule } from './db/db.module';
     DbModule,
   ],
   controllers: [AppController],
-  providers: [AppService, DbService],
+  providers: [AppService, DbService, PrismaService],
 })
 export class AppModule {}

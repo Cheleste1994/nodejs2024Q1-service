@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  login     String   @unique
+  password  String
+  version   Int      @default(dbgenerated()) @map("version")
+
+  favorites Favorites?
+
+  @@map("user")
+}
+
+model Track {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name     String @unique
+  duration Int
+
+  artist   Artist? @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId String  @unique
+
+  album   Album? @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId String @unique
+
+  @@map("track")
+}
+
+model Artist {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name   String  @unique
+  grammy Boolean
+
+  tracks Track[]
+  album  Album[]
+
+  @@map("artist")
+}
+
+model Album {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name String   @unique
+  year DateTime
+
+  artist   Artist? @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId String  @unique
+
+  tracks Track[]
+
+  @@map("album")
+}
+
+model Favorites {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+
+  tracks String[]
+  albums String[]
+  artists String[]
+
+  @@map("favorites")
+}

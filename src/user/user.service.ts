@@ -8,39 +8,39 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class UserService {
-  constructor(private state: DbService) {}
+  constructor(private state: DbService, private prisma: PrismaService) {}
 
   async create({ login, password }: CreateUserDto): Promise<User> {
-    const id = uuidv4();
-
-    this.state.db.users[id] = {
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      id,
-      login,
-      password,
-      version: 1,
-    };
-
-    return this.state.db.users[id];
+    return this.prisma.user.create({
+      data: {
+        login,
+        password,
+        version: 1,
+      },
+    });
   }
 
   async getAll(): Promise<User[] | null> {
-    return Object.values(this.state.db.users);
+    return this.prisma.user.findMany();
   }
 
   async getById(id: string): Promise<User | null> {
-    return this.state.db.users[id] || null;
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
   async updatePassword(
     id: string,
     { newPassword, oldPassword }: UpdatePasswordDto,
   ): Promise<User> {
-    const user = this.state.db.users[id];
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -50,11 +50,14 @@ export class UserService {
       throw new ForbiddenException('Invalid old password');
     }
 
-    user.password = newPassword;
-    user.updatedAt = Date.now();
-    user.version += 1;
-
-    return user;
+    return this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        password: newPassword,
+      },
+    });
   }
 
   async remove(id: string) {
@@ -62,7 +65,11 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    delete this.state.db.users[id];
+    await this.prisma.user.delete({
+      where: {
+        id,
+      },
+    });
 
     return { status: 'ok' };
   }
