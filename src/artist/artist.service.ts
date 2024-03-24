@@ -10,62 +10,47 @@ import { PrismaService } from 'src/prisma.service';
 export class ArtistService {
   constructor(private state: DbService, private prisma: PrismaService) {}
 
-  async create({ grammy, name }: CreateArtistDto): Promise<Artist> {
-    const id = uuidv4();
-
-    this.state.db.artists[id] = {
-      name,
-      id,
-      grammy,
-    };
-
-    return this.state.db.artists[id];
+  async create(data: CreateArtistDto): Promise<Artist> {
+    return this.prisma.artist.create({
+      data,
+    });
   }
 
   async getAll(): Promise<Artist[]> {
-    return Object.values(this.state.db.artists);
+    return this.prisma.artist.findMany();
   }
 
   async getById(id: string): Promise<Artist> {
-    return this.state.db.artists[id] || null;
+    return this.prisma.artist.findUnique({ where: { id } });
   }
 
-  async update(id: string, { grammy, name }: UpdateArtistDto): Promise<Artist> {
-    const artist = this.state.db.artists[id];
+  async update(id: string, data: UpdateArtistDto): Promise<Artist> {
+    const artist = await this.getById(id);
 
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
 
-    artist.grammy = typeof grammy === 'boolean' ? grammy : artist.grammy;
-    artist.name = name || artist.name;
-
-    return artist;
+    return this.prisma.artist.update({
+      where: {
+        id,
+      },
+      data,
+    });
   }
 
   async remove(id: string) {
-    if (!this.state.db.artists[id]) {
+    const artist = await this.getById(id);
+
+    if (!artist) {
       throw new NotFoundException('Artist not found');
     }
 
-    Object.values(this.state.db.tracks).forEach((track) => {
-      if (track.artistId === id) {
-        track.artistId = null;
-      }
+    await this.prisma.artist.delete({
+      where: {
+        id,
+      },
     });
-
-    Object.values(this.state.db.albums).forEach((album) => {
-      if (album.artistId === id) {
-        album.artistId = null;
-      }
-    });
-
-    const indexArtist = this.state.db.favorites.artists.indexOf(id);
-    if (indexArtist !== -1) {
-      this.state.db.favorites.artists.splice(indexArtist, 1);
-    }
-
-    delete this.state.db.artists[id];
 
     return { status: 'ok' };
   }

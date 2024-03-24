@@ -1,6 +1,6 @@
-import {Track as TrackPrisma} from '@prisma/client'
+import { Track as TrackPrisma } from '@prisma/client';
 
-export class Track implements  TrackPrisma{
+export class Track implements TrackPrisma {
   id: string;
   createdAt: Date;
   updatedAt: Date;
