@@ -3,16 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DbService } from 'src/db/db.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
-import { v4 as uuidv4 } from 'uuid';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class UserService {
-  constructor(private state: DbService, private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   async create({ login, password }: CreateUserDto): Promise<User> {
     return this.prisma.user.create({
@@ -36,11 +34,7 @@ export class UserService {
     id: string,
     { newPassword, oldPassword }: UpdatePasswordDto,
   ): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id,
-      },
-    });
+    const user = await this.getById(id)
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -61,7 +55,9 @@ export class UserService {
   }
 
   async remove(id: string) {
-    if (!this.state.db.users[id]) {
+    const user = await this.getById(id)
+
+    if (!user) {
       throw new NotFoundException('User not found');
     }
 

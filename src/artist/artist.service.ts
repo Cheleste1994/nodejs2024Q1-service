@@ -4,10 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { Artist } from './entities/artist.entity';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class ArtistService {
-  constructor(private state: DbService) {}
+  constructor(private state: DbService, private prisma: PrismaService) {}
 
   async create({ grammy, name }: CreateArtistDto): Promise<Artist> {
     const id = uuidv4();

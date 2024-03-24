@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db/db.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class TrackService {
-  constructor(private state: DbService) {}
+  constructor(private prisma: PrismaService) {}
 
   async create({
     albumId,
@@ -15,56 +14,54 @@ export class TrackService {
     duration,
     name,
   }: CreateTrackDto): Promise<Track> {
-    const id = uuidv4();
-
-    this.state.db.tracks[id] = {
-      name,
-      id,
-      duration,
-      albumId: albumId || null,
-      artistId: artistId || null,
-    };
-
-    return this.state.db.tracks[id];
+    return this.prisma.track.create({
+      data: {
+        name,
+        duration,
+        albumId: albumId || null,
+        artistId: artistId || null,
+      },
+    });
   }
 
   async getAll(): Promise<Track[]> {
-    return Object.values(this.state.db.tracks);
+    return this.prisma.track.findMany();
   }
 
   async getById(id: string): Promise<Track> {
-    return this.state.db.tracks[id] || null;
+    return this.prisma.track.findUnique({ where: { id } });
   }
 
   async update(
     id: string,
-    { albumId, artistId, duration, name }: UpdateTrackDto,
+    data: UpdateTrackDto,
   ): Promise<Track> {
-    const track = this.state.db.tracks[id];
+    const track = await this.getById(id);
 
     if (!track) {
       throw new NotFoundException('Track not found');
     }
 
-    track.albumId = albumId || track.albumId;
-    track.artistId = artistId || track.artistId;
-    track.duration = duration || track.duration;
-    track.name = name || track.name;
-
-    return track;
+    return this.prisma.track.update({
+      where: {
+        id,
+      },
+      data
+    });
   }
 
   async remove(id: string) {
-    if (!this.state.db.tracks[id]) {
+    const track = await this.getById(id)
+
+    if (!track) {
       throw new NotFoundException('Track not found');
     }
 
-    const indexTrack = this.state.db.favorites.tracks.indexOf(id);
-    if (indexTrack !== -1) {
-      this.state.db.favorites.tracks.splice(indexTrack, 1);
-    }
-
-    delete this.state.db.tracks[id];
+    await this.prisma.track.delete({
+      where: {
+        id,
+      },
+    });
 
     return { status: 'ok' };
   }
