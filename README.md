@@ -19,6 +19,8 @@ npm install
 
 ## Running application
 
+To successfully run the application, make sure to specify the DATABASE_URL to your PostgreSQL database in the environment (env) file.
+
 ```
 npm start
 ```

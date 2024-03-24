@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt Float
+  updatedAt Float
+  login     String   @unique
+  password  String
+  version   Int      @default(1) @map("version")
+
+  @@map("user")
+}
+
+model Track {
+  id        String   @id @default(uuid())
+  name     String
+  duration Int
+
+  artist   Artist? @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  artistId String?
+
+  album   Album?  @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  albumId String?
+
+  @@map("track")
+}
+
+model Artist {
+  id        String   @id @default(uuid())
+  name   String
+  grammy Boolean
+
+  tracks Track[]
+  album  Album[]
+
+  @@map("artist")
+}
+
+model Album {
+  id        String   @id @default(uuid())
+  name String
+  year Int
+
+  artist   Artist? @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  artistId String?
+
+  tracks Track[]
+
+  @@map("album")
+}
+
+model Favorites {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tracks  String[]
+  albums  String[]
+  artists String[]
+
+  @@map("favorites")
+}
