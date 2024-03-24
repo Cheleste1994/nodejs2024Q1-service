@@ -63,7 +63,7 @@ model Album {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   name String   @unique
-  year DateTime
+  year Int
 
   artist   Artist? @relation(fields: [artistId], references: [id], onDelete: Cascade)
   artistId String  @unique
