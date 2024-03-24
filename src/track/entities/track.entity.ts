@@ -6,6 +6,4 @@ export class Track implements TrackPrisma {
   duration: number;
   artistId: string;
   albumId: string;
-
-
 }

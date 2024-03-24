@@ -1,5 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { DbService } from 'src/db/db.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { Track } from './entities/track.entity';
@@ -15,15 +14,14 @@ export class TrackService {
     duration,
     name,
   }: CreateTrackDto): Promise<Track> {
-
     return this.prisma.track.create({
       data: {
         duration,
         name,
         albumId,
-        artistId
-      }
-    })
+        artistId,
+      },
+    });
   }
 
   async getAll(): Promise<Track[]> {
@@ -31,14 +29,11 @@ export class TrackService {
   }
 
   async getById(id: string): Promise<Track> {
-    const result = await this.prisma.track.findUnique({ where: { id } })
+    const result = await this.prisma.track.findUnique({ where: { id } });
     return result;
   }
 
-  async update(
-    id: string,
-    data: UpdateTrackDto,
-  ): Promise<Track> {
+  async update(id: string, data: UpdateTrackDto): Promise<Track> {
     const track = await this.getById(id);
 
     if (!track) {
@@ -49,12 +44,12 @@ export class TrackService {
       where: {
         id,
       },
-      data
+      data,
     });
   }
 
   async remove(id: string) {
-    const track = await this.getById(id)
+    const track = await this.getById(id);
 
     if (!track) {
       throw new NotFoundException('Track not found');

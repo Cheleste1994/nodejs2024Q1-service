@@ -4,6 +4,4 @@ export class Artist implements ArtistPrisma {
   id: string;
   name: string;
   grammy: boolean;
-
-
 }
