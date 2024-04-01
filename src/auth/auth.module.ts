@@ -6,7 +6,6 @@ import { JwtStrategy } from './jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getJwtConfig } from 'src/config/jwt.config';
-import { DateScalar } from 'src/common/scalars/date.scalar';
 
 @Module({
   imports: [
@@ -18,6 +17,6 @@ import { DateScalar } from 'src/common/scalars/date.scalar';
       useFactory: getJwtConfig,
     }),
   ],
-  providers: [AuthResolver, AuthService, JwtStrategy, DateScalar],
+  providers: [AuthResolver, AuthService, JwtStrategy],
 })
 export class AuthModule {}

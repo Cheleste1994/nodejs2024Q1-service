@@ -10,6 +10,7 @@ import { AuthDto } from './dto/auth.dto';
 import { verify } from 'argon2';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 export enum EnumTokens {
   'ACCESS_TOKEN' = 'accessToken',
@@ -28,7 +29,6 @@ export class AuthService {
   ) {}
 
   async login(dto: AuthDto) {
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...user } = await this.validateUser(dto);
 
     const tokens = this.issueToken(user.id);
@@ -39,15 +39,14 @@ export class AuthService {
     };
   }
 
-  async register(dto: AuthDto) {
-    const oldUser = await this.userService.getByEmail(dto.email);
+  async register(dto: CreateUserDto) {
+    const oldUser = await this.userService.getByEmail(dto.login);
 
     if (oldUser) {
       throw new BadRequestException('User already exists');
     }
 
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...user } = await this.userService.createUser(dto);
+    const { password, ...user } = await this.userService.create(dto);
 
     const tokens = this.issueToken(user.id);
 
@@ -94,8 +93,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...user } = await this.userService.user({ id: result.id });
+    const { password, ...user } = await this.userService.getById(result.id);
 
     const tokens = this.issueToken(user.id);
 

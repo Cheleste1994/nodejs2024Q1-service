@@ -15,6 +15,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { IsValidUuid } from 'src/decorators/isValidUuid.decorators';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @ApiTags('User')
 @Controller('user')
@@ -23,6 +24,7 @@ export class UserController {
 
   @Post()
   @HttpCode(201)
+  @Auth()
   @Header('Accept', 'application/json')
   async create(@Body() createUserDto: CreateUserDto) {
     const { password, ...result } = await this.userService.create(
@@ -35,6 +37,7 @@ export class UserController {
 
   @Get()
   @HttpCode(200)
+  @Auth()
   async getAll() {
     return (await this.userService.getAll()).map(({ password, ...result }) => {
       if (!password) {
@@ -46,6 +49,7 @@ export class UserController {
 
   @Get(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   async getById(@Param('id') @IsValidUuid() id: string) {
     const result = await this.userService.getById(id);
@@ -62,6 +66,7 @@ export class UserController {
 
   @Put(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   async update(
     @Param('id') @IsValidUuid() id: string,
@@ -77,6 +82,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @Auth()
   @HttpCode(204)
   async remove(@Param('id') @IsValidUuid() id: string) {
     return this.userService.remove(id);

@@ -10,6 +10,7 @@ import { FavsModule } from './favs/favs.module';
 import { DbService } from './db/db.service';
 import { DbModule } from './db/db.module';
 import { PrismaService } from './prisma.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PrismaService } from './prisma.service';
     AlbumModule,
     FavsModule,
     DbModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService, DbService, PrismaService],

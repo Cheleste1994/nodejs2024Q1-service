@@ -42,6 +42,10 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
+  async getByEmail(login: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { login } });
+  }
+
   async updatePassword(
     id: string,
     { newPassword, oldPassword }: UpdatePasswordDto,
