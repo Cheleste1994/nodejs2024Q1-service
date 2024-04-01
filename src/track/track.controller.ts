@@ -17,6 +17,7 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 import { validate as uuidValidate } from 'uuid';
 import { IsValidUuid } from 'src/decorators/isValidUuid.decorators';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @ApiTags('Track')
 @Controller('track')
@@ -25,6 +26,7 @@ export class TrackController {
 
   @Post()
   @HttpCode(201)
+  @Auth()
   @Header('Accept', 'application/json')
   async create(@Body() createTrackDto: CreateTrackDto) {
     if (createTrackDto.albumId && !uuidValidate(createTrackDto.albumId)) {
@@ -40,6 +42,7 @@ export class TrackController {
 
   @Get()
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   getAll() {
     return this.trackService.getAll();
@@ -47,6 +50,7 @@ export class TrackController {
 
   @Get(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   async getById(
     @Param('id')
@@ -64,6 +68,7 @@ export class TrackController {
 
   @Put(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   update(
     @Param('id') @IsValidUuid() id: string,
@@ -81,6 +86,7 @@ export class TrackController {
   }
 
   @Delete(':id')
+  @Auth()
   @HttpCode(204)
   remove(@Param('id') @IsValidUuid() id: string) {
     return this.trackService.remove(id);

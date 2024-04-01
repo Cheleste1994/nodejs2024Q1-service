@@ -23,7 +23,7 @@ import { AuthModule } from './auth/auth.module';
     AlbumModule,
     FavsModule,
     DbModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, DbService, PrismaService],

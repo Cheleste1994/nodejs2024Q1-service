@@ -12,5 +12,4 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = ctx.switchToHttp().getRequest();
     return request;
   }
-
 }

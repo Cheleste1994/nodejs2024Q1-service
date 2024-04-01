@@ -16,6 +16,7 @@ import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { ArtistService } from './artist.service';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @ApiTags('Artist')
 @Controller('artist')
@@ -24,6 +25,7 @@ export class ArtistController {
 
   @Post()
   @HttpCode(201)
+  @Auth()
   @Header('Accept', 'application/json')
   async create(@Body() createArtistDto: CreateArtistDto) {
     return this.artistService.create(createArtistDto);
@@ -31,6 +33,7 @@ export class ArtistController {
 
   @Get()
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   getAll() {
     return this.artistService.getAll();
@@ -38,6 +41,7 @@ export class ArtistController {
 
   @Get(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   async getById(
     @Param('id')
@@ -55,6 +59,7 @@ export class ArtistController {
 
   @Put(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   update(
     @Param('id') @IsValidUuid() id: string,
@@ -65,6 +70,7 @@ export class ArtistController {
 
   @Delete(':id')
   @HttpCode(204)
+  @Auth()
   remove(@Param('id') @IsValidUuid() id: string) {
     return this.artistService.remove(id);
   }

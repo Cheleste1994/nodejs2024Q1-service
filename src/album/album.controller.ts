@@ -17,6 +17,7 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { validate as uuidValidate } from 'uuid';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @ApiTags('Album')
 @Controller('album')
@@ -25,6 +26,7 @@ export class AlbumController {
 
   @Post()
   @HttpCode(201)
+  @Auth()
   @Header('Accept', 'application/json')
   async create(@Body() createAlbumDto: CreateAlbumDto) {
     if (createAlbumDto.artistId && !uuidValidate(createAlbumDto.artistId)) {
@@ -36,6 +38,7 @@ export class AlbumController {
 
   @Get()
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   getAll() {
     return this.albumService.getAll();
@@ -43,6 +46,7 @@ export class AlbumController {
 
   @Get(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   async getById(
     @Param('id')
@@ -60,6 +64,7 @@ export class AlbumController {
 
   @Put(':id')
   @HttpCode(200)
+  @Auth()
   @Header('Accept', 'application/json')
   update(
     @Param('id') @IsValidUuid() id: string,
@@ -74,6 +79,7 @@ export class AlbumController {
 
   @Delete(':id')
   @HttpCode(204)
+  @Auth()
   remove(@Param('id') @IsValidUuid() id: string) {
     return this.albumService.remove(id);
   }

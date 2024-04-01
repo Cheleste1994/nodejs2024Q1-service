@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
-import { AuthDto } from './dto/auth.dto';
 import { verify } from 'argon2';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -28,9 +27,10 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async login(dto: AuthDto) {
+  async login(dto: CreateUserDto) {
     const { password, ...user } = await this.validateUser(dto);
 
+    console.log('password excluded', password);
     const tokens = this.issueToken(user.id);
 
     return {
@@ -48,6 +48,8 @@ export class AuthService {
 
     const { password, ...user } = await this.userService.create(dto);
 
+    console.log('password excluded', password);
+
     const tokens = this.issueToken(user.id);
 
     return {
@@ -56,8 +58,8 @@ export class AuthService {
     };
   }
 
-  private async validateUser(dto: AuthDto) {
-    const user = await this.userService.getByEmail(dto.email);
+  private async validateUser(dto: CreateUserDto) {
+    const user = await this.userService.getByEmail(dto.login);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -94,6 +96,7 @@ export class AuthService {
     }
 
     const { password, ...user } = await this.userService.getById(result.id);
+    console.log('password excluded', password);
 
     const tokens = this.issueToken(user.id);
 

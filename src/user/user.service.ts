@@ -2,11 +2,13 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { PrismaService } from 'src/prisma.service';
+import { hash, verify } from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -26,7 +28,7 @@ export class UserService {
     return this.prisma.user.create({
       data: {
         login,
-        password,
+        password: await hash(password),
         createdAt: Date.now(),
         updatedAt: Date.now(),
         version: 1,
@@ -46,30 +48,36 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { login } });
   }
 
-  async updatePassword(
-    id: string,
-    { newPassword, oldPassword }: UpdatePasswordDto,
-  ): Promise<User> {
-    const user = await this.getById(id);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    if (user.password !== oldPassword) {
-      throw new ForbiddenException('Invalid old password');
-    }
+  async updatePassword(id: string, dto: UpdatePasswordDto): Promise<User> {
+    const { password, ...user } = await this.validateUser(id, dto);
+    console.log('password excluded', password);
 
     return this.prisma.user.update({
       where: {
         id,
       },
       data: {
-        password: newPassword,
+        password: await hash(dto.newPassword),
         updatedAt: Date.now(),
         version: user.version + 1,
       },
     });
+  }
+
+  private async validateUser(id: string, dto: UpdatePasswordDto) {
+    const user = await this.getById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isValid = await verify(user.password, dto.oldPassword);
+
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    return user;
   }
 
   async remove(id: string) {
